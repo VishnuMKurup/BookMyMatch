@@ -8,7 +8,7 @@ BookMyShow is an advanced movie booking system designed to provide a seamless ex
 - **Responsibilities:**
   - Add movies to the database.
 - **Note:**
-  - Use an email with the domain `@bookmyshow.com` while registering.
+  - Use an email with the domain `@bookmymatch.com` while registering.
 
 ### Theater Admin
 - **Responsibilities:**
