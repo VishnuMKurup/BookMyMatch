@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %} 
+Stadiums 
+{% endblock %}
+
+{% block content %}
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="/">Bookmyshow</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          {% if user.is_tournament_admin %}
+            <a class="nav-link" href="/tournaments">Tournament</a>
+          {% elif user.is_super_admin %}
+            <a class="nav-link" href="/my_stadiums">Stadiums</a>
+          {% else %}
+            <a class="nav-link" href="/my_tickets">My Bookings</a>
+          {% endif %}
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if user.is_tournament_admin %}
+              {{ user.name }}, Stadium Admin
+            {% elif user.is_super_admin %}
+              {{ user.name }}, Super Admin
+            {% else %}
+              {{ user.name }}
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="/login">Login</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Flash Messages -->
+<div class="container mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col">
+      <div class="container-fluid">
+        <div class="row mb-4">
+          <div class="col-10">
+            <h5 class="fw-bold">My Stadiums</h5>
+          </div>
+          <div class="col-2 text-end">
+            <a href="/add_stadiums" class="btn btn-outline-dark btn-sm">Add Stadiums</a>
+          </div>
+        </div>
+      </div>
+      <div class="container-fluid">
+        <div class="list-group shadow">
+          {% for stadium in user.stadium %}
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ stadium.name }}</h5>
+                <small>{{ stadium.city }}</small>
+              </div>
+              <p class="mb-1">{{ stadium.address }}</p>
+              <!-- <small class="text-muted">Capacity: {{ stadium.capacity }}</small> -->
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="container-fluid">
+        <div class="row mb-4">
+          <div class="col-10">
+            <h5 class="fw-bold">My Shows</h5>
+          </div>
+          <div class="col-2 text-end">
+            <a href="/add_matches" class="btn btn-outline-dark btn-sm">Add Matches</a>
+          </div>
+        </div>
+      </div>
+      <div class="container-fluid">
+        <div class="list-group shadow">
+          {% for match in user.matches %}
+            <a href="/show_tickets/{{ match.id }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ match.tournament }}</h5>
+                <small>{{ match.datetime_screened }}</small>
+              </div>
+              <p class="mb-1">{{ match.stadium }}</p>
+              <small class="text-muted">Seats Available: {{ match.seats_available }}</small>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f8f9fa; /* Light gray background */
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #343a40; /* Dark color for contrast */
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  color: #6c757d; /* Medium gray color */
+}
+
+.navbar-nav .nav-link:hover {
+  color: #343a40; /* Dark color on hover */
+}
+
+.alert {
+  font-weight: 500;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background-color: #d4edda; /* Light green background */
+  color: #155724; /* Dark green text */
+}
+
+.alert-danger {
+  background-color: #f8d7da; /* Light red background */
+  color: #721c24; /* Dark red text */
+}
+
+.btn-outline-dark {
+  border-color: #343a40; /* Dark border color */
+  color: #343a40; /* Dark text color */
+}
+
+.btn-outline-dark:hover {
+  background-color: #343a40; /* Dark background on hover */
+  color: #fff; /* White text on hover */
+}
+
+.list-group {
+  background-color: #fff; /* White background */
+}
+
+.list-group-item {
+  border-color: #dee2e6; /* Light gray border */
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa; /* Light gray background on hover */
+}
+
+.shadow {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Soft shadow for cards */
+}
+
+</style>

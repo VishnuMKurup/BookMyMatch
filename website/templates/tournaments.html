@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Login
+Tournaments
 {% endblock %}
 
 {% block content %}
@@ -17,9 +17,9 @@ Login
         {% if user.is_authenticated %}
         <li class="nav-item">
           {% if user.is_tournament_admin %}
-            <a class="nav-link" href="/my_stadiums">Tournament</a>
+            <a class="nav-link" href="/my_stadiums">Theater</a>
           {% elif user.is_super_admin %}
-            <a class="nav-link" href="/tournaments">Stadium</a>
+            <a class="nav-link active" href="/stadiums">Stadium</a>
           {% else %}
             <a class="nav-link" href="/my_tickets">My Bookings</a>
           {% endif %}
@@ -42,7 +42,7 @@ Login
         </li>
         {% else %}
         <li class="nav-item">
-          <a class="nav-link active" href="/login">Login</a>
+          <a class="nav-link" href="/login">Login</a>
         </li>
         {% endif %}
       </ul>
@@ -81,26 +81,27 @@ Login
   {% endwith %}
 </div>
 
-<!-- Login Form -->
+<!-- Tournaments List -->
 <div class="container mt-5">
-  <h3 class="text-center font-weight-bold">Login</h3>
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <form method="POST">
-        <div class="mb-3">
-          <label for="email" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="email" name="email" required>
+  <div class="d-flex justify-content-between align-items-center">
+    <h3 class="fw-bold">Tournaments</h3>
+    <a href="/add_tournaments" class="btn btn-outline-primary">Add Tournaments</a>
+  </div>
+  <div class="row row-cols-1 row-cols-md-4 g-4 mt-4">
+    {% for tournament in user.tournaments %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <img src="/static/tournament_posters/{{ tournament.poster }}" class="card-img-top" alt="{{ tournament.title }}">
+        <div class="card-body">
+          <h5 class="card-title">{{ tournament.title }}</h5>
+          <p class="card-text">{{ tournament.starring }}</p>
         </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" name="password" required>
+        <div class="card-footer">
+          <a href="/update_tournaments/{{ tournament.id }}" class="btn btn-outline-secondary btn-sm">Update</a>
         </div>
-        <p>Not Registered? <a href="/sign_up">Register</a></p>
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary">Login</button>
-        </div>
-      </form>
+      </div>
     </div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

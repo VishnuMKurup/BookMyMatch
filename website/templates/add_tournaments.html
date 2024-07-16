@@ -1,41 +1,38 @@
 {% extends "base.html" %} 
 
 {% block title %} 
-Add Movie 
+Add Tournament 
 {% endblock %}
 
 {% block content %}
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" style="font-weight: 1000; font-family: 'Poppins', sans-serif;color:rgb(192, 25, 192)" href="#">Bookmyshow</a>
+    <a class="navbar-brand" style="font-weight: 1000; font-family: 'Poppins', sans-serif;color:rgb(192, 25, 192)" href="/">Bookmyshow</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse d-md-flex justify-content-md-end" id="navbarNavDropdown">
       <ul class="navbar-nav navbar-nav mr-auto">
-        <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="/">Home</a>
-        </li>
         {% if user.is_authenticated %}
         <li class="nav-item">
-          {% if user.is_theatre_admin %}
-            <a class="nav-link" href="/my_theaters">Theater</a>
+          {% if user.is_tournament_admin %}
+            <a class="nav-link" href="/my_stadiums">Tournament</a>
         </li>
         {% elif user.is_super_admin %}
-        <a class="nav-link active" href="movies">Movies</a>
+        <a class="nav-link active" href="tournaments">Stadium</a>
         {% else %}
-        <a class="nav-link" href="my_tickets">My Tickets</a>
+        <a class="nav-link" href="my_tickets">My Bookings</a>
         {% endif %}
         {% endif %}
         </li>
         {% if user.is_authenticated %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if user.is_theatre_admin %}
-              {{ user.name }}, Theatre Admin
+            {% if user.is_tournament_admin %}
+              {{ user.name }}, Tournament Admin
             {% elif user.is_super_admin %}
-              {{ user.name }}, Super Admin
+              {{ user.name }}, Stadium Admin
             {% else %}
               {{ user.name }}
             {% endif %}
@@ -83,26 +80,26 @@ Add Movie
   {% endif %}
 {% endwith %}
 
-<h3 style="display: flex; justify-content: center;align-items: center;padding-top:5%; font-weight:700">Add Movie</h3>
+<h3 style="display: flex; justify-content: center;align-items: center;padding-top:5%; font-weight:700">Add Tournament</h3>
 <div class="form" style="display: flex; justify-content: center;align-items: center;padding-top:10px">
 <form method = "POST" enctype="multipart/form-data">
     <div class="mb-3">
       <label for="title" class="form-label">Title</label>
-      <input type="Text" class="form-control" placeholder="Title of the movie" name="title">
+      <input type="Text" class="form-control" placeholder="Title of the tournament" name="title">
     </div>
     <div class="mb-3">
-      <label for="starring" class="form-label">Starring</label>
+      <label for="icon" class="form-label">Icon Player</label>
       <input type="Text" class="form-control" placeholder="Lead cast" name="starring">
     </div>
     <div class="mb-3">
-        <label for="production_house" class="form-label">Production</label>
-        <input type="Text" class="form-control" placeholder="Production_house" name="production_house">
+        <label for="organizer" class="form-label">Organizer</label>
+        <input type="Text" class="form-control" placeholder="organizer" name="organizer">
     </div>
     <div class="mb-3">
         <label for="poster" class="form-label">Poster</label>
         <input type="file" class="form-control" accept="image/*" placeholder="Upload Image" name="poster">
     </div>
-    <button type="submit" class="btn btn-primary ">Add Movie</button>
+    <button type="submit" class="btn btn-primary ">Add Tournament</button>
 </form>
 </div>
 {% endblock %}

@@ -46,16 +46,16 @@ def sign_up():
             if user:
                 flash('Account already exists, Please Login', category='warning')
             else:
-                if bool(re.search(r'^[\w.+\-]+@bookmyshow\.com$', email)):
-                    if user_type == "theatre_admin":
-                        flash('You cannot use bookmyshow domain for other purposes', category='warning')
+                if bool(re.search(r'^[\w.+\-]+@bookmymatch\.com$', email)):
+                    if user_type == "tournament_admin":
+                        flash('You cannot use bookmymatch domain for other purposes', category='warning')
                         return render_template('sign_up.html', user=current_user)
                     else:
-                        new_user = RegisteredUser(email=email, name=name, password=generate_password_hash(password1, method='pbkdf2:sha256'), is_theatre_admin=False, is_super_admin=True)
-                elif user_type == "theatre_admin":
-                    new_user = RegisteredUser(email=email, name=name, password=generate_password_hash(password1, method='pbkdf2:sha256'), is_theatre_admin=True, is_super_admin=False)
+                        new_user = RegisteredUser(email=email, name=name, password=generate_password_hash(password1, method='pbkdf2:sha256'), is_tournament_admin=False, is_super_admin=True)
+                elif user_type == "tournament_admin":
+                    new_user = RegisteredUser(email=email, name=name, password=generate_password_hash(password1, method='pbkdf2:sha256'), is_tournament_admin=True, is_super_admin=False)
                 else:
-                    new_user = RegisteredUser(email=email, name=name, password=generate_password_hash(password1, method='pbkdf2:sha256'), is_theatre_admin=False, is_super_admin=False)
+                    new_user = RegisteredUser(email=email, name=name, password=generate_password_hash(password1, method='pbkdf2:sha256'), is_tournament_admin=False, is_super_admin=False)
                 db.session.add(new_user)
                 db.session.commit()
                 flash('Account created!', category='success')

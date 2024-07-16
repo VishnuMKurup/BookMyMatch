@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, current_app
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import RegisteredUser, Theaters, Movie, Show, Ticket
+from .models import RegisteredUser, Stadium, Tournament, Match, Ticket, Seat
 from . import db
 import os
 import secrets
@@ -10,116 +10,121 @@ views = Blueprint('views', __name__)
 
 @views.route('/')
 def home():
-    shows = Show.query.all()
-    movies = Movie.query.all()
+    matches = Match.query.all()
+    tournaments = Tournament.query.all()
     
-    return render_template('home.html', user = current_user, movies = movies)
+    return render_template('home.html', user = current_user, tournaments = tournaments)
 
-@views.route('/movies')
+@views.route('/tournaments')
 @login_required
-def movies():
-    if current_user.is_super_admin == True:
-        return render_template('movies.html', user = current_user)
+def tournaments():
+    if current_user.is_tournament_admin == True:
+        return render_template('tournaments.html', user = current_user)
     return redirect(url_for('views.home'))
 
-@views.route('/add_movies', methods=['GET', 'POST'])
+@views.route('/add_tournaments', methods=['GET', 'POST'])
 @login_required
-def add_movies():
-    if current_user.is_super_admin == True:
+def add_tournaments():
+    print(f"### current_user.is_super_admin {current_user.is_super_admin}")
+    if current_user.is_tournament_admin == True:
         if request.method == 'POST':
-            movie_title =  request.form.get('title')
-            movie_starring = request.form.get('starring')
-            movie_production_house = request.form.get('production_house')
-            movie_no_of_watched = 0
+            tournament_title =  request.form.get('title')
+            tournament_starring = request.form.get('starring')
+            tournament_production_house = request.form.get('organizer')
+            tournament_no_of_watched = 0
             print(type(request.files['poster']))
-            movie_poster = save_images(request.files['poster'])
+            tournament_poster = save_images(request.files['poster'])
 
             # check if all the fields are not empty
-            if len(movie_title) >= 1 and len(movie_starring) >= 1 and len(movie_production_house) >= 1 :
+            print(f'#####: tournament_title: {tournament_title}')
+            print(f'#####: tournament_production_house: {tournament_production_house}')
+            print(f'#####: tournament_starring: {tournament_starring}')
+            if len(tournament_title) >= 1 and len(tournament_starring) >= 1 and len(tournament_production_house) >= 1 :
                 # good to go
-                new_movie = Movie(poster = movie_poster, title = movie_title, starring = movie_starring, production_house = movie_production_house, no_of_watched = movie_no_of_watched, movie_admin_id = current_user.id)
+                new_tournament = Tournament(poster = tournament_poster, title = tournament_title, starring = tournament_starring, organizer = tournament_production_house, no_of_watched = tournament_no_of_watched, tournament_admin_id = current_user.id)
 
-                db.session.add(new_movie)
+                db.session.add(new_tournament)
                 db.session.commit()
 
-                flash( movie_title + ' is being added', category='success')
-                return redirect(url_for('views.movies'))
+                flash( tournament_title + ' is being added', category='success')
+                return redirect(url_for('views.tournaments'))
             else:
                 flash('Make sure all the fields are filled', category='error')
-                return render_template('add_movies.html', user = current_user)
+                return render_template('add_tournaments.html', user = current_user)
         else:
-            return render_template('add_movies.html', user = current_user)
+            return render_template('add_tournaments.html', user = current_user)
     return redirect(url_for('views.home'))
 
 
-@views.route('/update_movies/<int:id>', methods = ['POST', 'GET'])
+@views.route('/update_tournaments/<int:id>', methods = ['POST', 'GET'])
 @login_required
-def update_movies(id):
-    if current_user.is_super_admin == True:
-        movie_to_update = Movie.query.get(int(id))
+def update_tournaments(id):
+    if current_user.is_super_admin == True or current_user.is_tournament_admin:
+        tournament_to_update = Tournament.query.get(int(id))
         if request.method == 'POST':
-            movie_to_update.poster = save_images(request.files['poster'])
-            movie_to_update.title =  request.form.get('title')
-            movie_to_update.starring = request.form.get('starring')
-            movie_to_update.production_house = request.form.get('production_house')
+            tournament_to_update.poster = save_images(request.files['poster'])
+            tournament_to_update.title =  request.form.get('title')
+            tournament_to_update.starring = request.form.get('starring')
+            tournament_to_update.organizer = request.form.get('organizer')
             
             db.session.commit()
 
-            flash( movie_to_update.title + ' updated succesfully', category='success')
-            return redirect(url_for('views.movies'))
+            flash( tournament_to_update.title + ' updated succesfully', category='success')
+            return redirect(url_for('views.tournaments'))
         else:
-            if movie_to_update:
-                return render_template('update_movies.html', user = current_user, movie = movie_to_update)
+            if tournament_to_update:
+                return render_template('update_tournaments.html', user = current_user, tournament = tournament_to_update)
     else:
-        return redirect(url_for('movies.home'))
+        return redirect(url_for('tournaments.home'))
 
 
 
-@views.route('/my_theaters')
+@views.route('/my_stadiums')
 @login_required
-def my_theaters():
-    if current_user.is_theatre_admin == True:
-        movies = Movie.query.all()
-        return render_template('my_theaters.html', user = current_user, movies = movies)
+def my_stadiums():
+    print(f"#####is_super_admin: {current_user.is_super_admin}")
+    if current_user.is_super_admin == True:
+        tournaments = Tournament.query.all()
+        return render_template('my_stadiums.html', user = current_user, tournaments = tournaments)
     return redirect(url_for('views.home'))
 
-@views.route('/select_theaters/<int:id>')
-def select_theaters(id):
-    # movie_id
-    shows = Show.query.filter_by(movie_screened = int(id)).all()
-    movie = Movie.query.get(int(id))
+@views.route('/select_stadiums/<int:id>')
+def select_stadiums(id):
+    # tournament_id
+    matches = Match.query.filter_by(tournament_screened = int(id)).all()
+    tournament = Tournament.query.get(int(id))
     print("line 90")
-    if shows:
-        return render_template('select_theaters.html', user = current_user, shows = shows, movie = movie)
+    if matches:
+        return render_template('select_stadiums.html', user = current_user, matches = matches, tournament = tournament)
     else :
-        flash( 'This movie has no shows currently', category='note')
+        flash( 'This tournament has no matches currently', category='note')
         return redirect(url_for('views.home'))
 
-@views.route('/add_theaters', methods=['GET', 'POST'])
+@views.route('/add_stadiums', methods=['GET', 'POST'])
 @login_required
-def add_theaters():
-    if current_user.is_theatre_admin == True:
+def add_stadiums():
+    if current_user.is_super_admin == True:
         if request.method == 'POST':
-            theater_name =  request.form.get('name')
-            theater_address = request.form.get('address')
-            theater_location = request.form.get('location')
-            theater_city = request.form.get('city')
-            theater_contact_no = request.form.get('contact_no')
+            stadium_name =  request.form.get('name')
+            stadium_address = request.form.get('address')
+            stadium_location = request.form.get('location')
+            stadium_city = request.form.get('city')
+            stadium_contact_no = request.form.get('contact_no')
 
             # check if all the fields are not empty
-            if len(theater_name) >= 1 and len(theater_address) >= 1 and len(theater_location) >= 1 and len(theater_city) >= 1 and len(theater_contact_no) == 10:
+            if len(stadium_name) >= 1 and len(stadium_address) >= 1 and len(stadium_location) >= 1 and len(stadium_city) >= 1 and len(stadium_contact_no) == 10:
                 # good to go
-                new_theater = Theaters(name = theater_name, address = theater_address, location = theater_location, city = theater_city, contact_no = theater_contact_no, theater_admin_id = current_user.id)
-                db.session.add(new_theater)
+                new_stadium = Stadium(name = stadium_name, address = stadium_address, location = stadium_location, city = stadium_city, contact_no = stadium_contact_no, stadium_admin_id = current_user.id)
+                db.session.add(new_stadium)
                 db.session.commit()
 
-                flash('Your Theater is being added', category='success')
-                return redirect(url_for('views.my_theaters'))
+                flash('Your Stadium is being added', category='success')
+                return redirect(url_for('views.my_stadiums'))
             else:
                 flash('Make sure all the fields are filled', category='error')
-                return render_template('add_theaters.html', user = current_user)
+                return render_template('add_stadiums.html', user = current_user)
         else:
-            return render_template('add_theaters.html', user = current_user)
+            return render_template('add_stadiums.html', user = current_user)
     return redirect(url_for('views.home'))
 
 @views.route('/my_tickets')
@@ -130,82 +135,115 @@ def my_tickets():
 @views.route('/book_ticket/<int:id>', methods=['GET', 'POST'])
 @login_required
 def book_ticket(id):
-    if current_user.is_super_admin == False and current_user.is_theatre_admin == False:
-        show_to_book = Show.query.get(int(id))
-        
+    if current_user.is_super_admin == False and current_user.is_tournament_admin == False:
+        match_to_book = Match.query.get(int(id))
+        seats = Seat.query.filter_by(match_id=id).all()
         if request.method == 'POST':
-            theater = Theaters.query.filter_by(name = str(show_to_book.theater)).first()
-
-            print(theater.name)
-            ticket_no_of_seats = request.form.get('no_of_seats')
-            # update the number of seats
-            if show_to_book.seats_available > 0:
-               show_to_book.seats_available = int(show_to_book.seats_available) - int(ticket_no_of_seats)
-
-               new_ticket = Ticket(show_booked = show_to_book.id, movie_booked = show_to_book.movie_screened, theater_booked = show_to_book.theater_screened_in, user = current_user.id, movie_name = show_to_book.movie, theater_name = show_to_book.theater, theater_address = theater.address, theater_address_link = theater.location, no_of_seats = ticket_no_of_seats, total_cost = int(show_to_book.cost_per_seat) * int(ticket_no_of_seats), show_timinig = show_to_book.datetime_screened)
-            
-               db.session.add(new_ticket)
-               db.session.commit()
-
-            flash('Your Show is being added', category='success')
-            return redirect(url_for('views.my_tickets'))
-        else:
-            return render_template('book_ticket.html', user = current_user, show = show_to_book)
-    else:
-        return redirect(url_for('views.select_theaters'))
-
-@views.route('/add_shows', methods=['GET', 'POST'])
-@login_required
-def add_shows():
-    print('reached 116')
-    movies = Movie.query.all()
-    theaters = Theaters.query.filter_by(theater_admin_id = int(current_user.id)).all()
-    if current_user.is_theatre_admin == True:
-        print('reached 120')
-        if request.method == 'POST':
-            print('reached 122')
-            show_movie_screened = Movie.query.filter_by(title = request.form.get('movie_screened')).first().id            
-            if show_movie_screened:
-                show_theater_screened_in = int(request.form.get('theater_screened_in'))
-                show_movie = request.form.get('movie_screened')
-                show_theater = Theaters.query.filter_by(id = request.form.get('theater_screened_in')).first()
-                show_date_time_screened = datetime.strptime(request.form.get('date_time_screened'), '%Y-%m-%dT%H:%M')
-                show_seats_available = int(request.form.get('seats_available'))
-                show_cost_per_seat = request.form.get('cost_per_seat')
-            else:
-                flash('Movie doesn\'t exist', category='warning')
-                return render_template('add_shows.html', user = current_user, movies = movies, theaters = theaters)
-            print(show_movie_screened)
-            if show_movie_screened >= 1 and show_theater_screened_in >= 1  and show_seats_available >= 1:
-                new_show = Show(movie_screened = show_movie_screened, theater_screened_in = show_theater_screened_in, movie = show_movie, theater = show_theater.name, theater_address = show_theater.address, theater_address_link = show_theater.location, datetime_screened = show_date_time_screened, theater_admin_id = current_user.id, seats_available = show_seats_available, cost_per_seat = show_cost_per_seat)
-                db.session.add(new_show)
+            selected_seat_ids = request.form.getlist('selected_seats')[0].split(',')
+            selected_seat_count = len(selected_seat_ids)
+            if (selected_seat_count == 1 and selected_seat_ids[0] == '') \
+                or \
+               (selected_seat_count > 0 and selected_seat_count <= match_to_book.seats_available):
+                match_to_book.seats_available -= selected_seat_count
+                for seat_id in selected_seat_ids:
+                    seat = Seat.query.get(int(seat_id))
+                    seat.is_available = False
+                
+                new_ticket = Ticket(
+                    match_booked=match_to_book.id,
+                    tournament_booked=match_to_book.tournament_screened,
+                    stadium_booked=match_to_book.stadium_screened_in,
+                    user=current_user.id,
+                    tournament_name=match_to_book.tournament,
+                    stadium_name=match_to_book.stadium,
+                    stadium_address=match_to_book.stadium_address,
+                    stadium_address_link=match_to_book.stadium_address_link,
+                    no_of_seats=selected_seat_count,
+                    total_cost=int(match_to_book.cost_per_seat) * selected_seat_count,
+                    match_timinig=match_to_book.datetime_screened
+                )
+                
+                db.session.add(new_ticket)
                 db.session.commit()
-                flash('Your Show is being added', category='success')
-                return redirect(url_for('views.my_theaters'))
+                flash('Your ticket has been booked successfully', category='success')
+                return redirect(url_for('views.my_tickets'))
+            else:
+                flash('Selected seats are not available', category='error')
+                return render_template('book_ticket.html', user=current_user, match=match_to_book, seats=seats)
+        else:
+            return render_template('book_ticket.html', user=current_user, match=match_to_book, seats=seats)
+    else:
+        return redirect(url_for('views.home'))
+
+
+@views.route('/add_matches', methods=['GET', 'POST'])
+@login_required
+def add_matches():
+    tournaments = Tournament.query.all()
+    stadium = Stadium.query.filter_by(stadium_admin_id=int(current_user.id)).all()
+    if current_user.is_super_admin == True:
+        if request.method == 'POST':
+            match_tournament_screened = Tournament.query.filter_by(title=request.form.get('tournament_screened')).first().id
+            if match_tournament_screened:
+                match_stadium_screened_in = int(request.form.get('stadium_screened_in'))
+                match_tournament = request.form.get('tournament_screened')
+                match_stadium = Stadium.query.filter_by(id=request.form.get('stadium_screened_in')).first()
+                match_date_time_screened = datetime.strptime(request.form.get('date_time_screened'), '%Y-%m-%dT%H:%M')
+                match_seats_available = int(request.form.get('seats_available'))
+                match_cost_per_seat = request.form.get('cost_per_seat')
+            else:
+                flash('Tournament doesn\'t exist', category='warning')
+                return render_template('add_matches.html', user=current_user, tournaments=tournaments, stadium=stadium)
+            
+            if match_tournament_screened >= 1 and match_stadium_screened_in >= 1 and match_seats_available >= 1:
+                new_match = Match(
+                    tournament_screened=match_tournament_screened,
+                    stadium_screened_in=match_stadium_screened_in,
+                    tournament=match_tournament,
+                    stadium=match_stadium.name,
+                    stadium_address=match_stadium.address,
+                    stadium_address_link=match_stadium.location,
+                    datetime_screened=match_date_time_screened,
+                    stadium_admin_id=current_user.id,
+                    seats_available=match_seats_available,
+                    cost_per_seat=match_cost_per_seat
+                )
+                db.session.add(new_match)
+                db.session.commit()
+
+                # Seed seats
+                for seat_num in range(1, match_seats_available + 1):
+                    seat = Seat(match_id=new_match.id, seat_number=f'S{seat_num}', is_available=True)
+                    db.session.add(seat)
+
+                db.session.commit()
+                flash('Your Match is being added', category='success')
+                return redirect(url_for('views.my_stadiums'))
             else:
                 flash('Make sure all the fields are filled', category='error')
-                return render_template('add_shows.html', user = current_user, movies = movies, theaters = theaters)
+                return render_template('add_matches.html', user=current_user, tournaments=tournaments, stadium=stadium)
         else:
-            return render_template('add_shows.html', user = current_user, movies = movies)
+            return render_template('add_matches.html', user=current_user, tournaments=tournaments, stadium=stadium)
     else:
-        return render_template('home.html', user = current_user, movies = movies)
+        return render_template('home.html', user=current_user, tournaments=tournaments)
 
-@views.route('show_tickets/<int:id>')
+
+@views.route('match_tickets/<int:id>')
 @login_required
-def show_tickets(id):
-    if current_user.is_theatre_admin == True:
-        tickets = Ticket.query.filter_by(show_booked = int(id)).all()
-        show = Show.query.get(int(id))
-        return render_template('show_tickets.html', user = current_user, tickets = tickets, show = show, no_of_tickets = len(tickets))
+def match_tickets(id):
+    if current_user.is_tournament_admin == True:
+        tickets = Ticket.query.filter_by(match_booked = int(id)).all()
+        match = Match.query.get(int(id))
+        return render_template('match_tickets.html', user = current_user, tickets = tickets, match = match, no_of_tickets = len(tickets))
     else:
-        return render_template('home.html', user = current_user, movies = movies)
+        return render_template('home.html', user = current_user, tournaments = tournaments)
         
 
 def save_images(poster):
     hash_photo = secrets.token_urlsafe(10)
     _, file_extension = os.path.splitext(poster.filename)
     image_name = hash_photo + file_extension
-    file_path = os.path.join(current_app.root_path, 'static/movie_posters', image_name)
+    file_path = os.path.join(current_app.root_path, 'static/tournament_posters', image_name)
     poster.save(file_path)
     return image_name
 

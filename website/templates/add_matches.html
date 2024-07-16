@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %} 
+Add Show 
+{% endblock %}
+
+{% block content %}
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" style="font-weight: 1000; font-family: 'Poppins', sans-serif; color: rgb(192, 25, 192);" href="/">Bookmyshow</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        {% if user.is_tournament_admin %}
+                            <a class="nav-link" href="/my_stadiums">Tournament</a>
+                        {% elif user.is_super_admin %}
+                            <a class="nav-link" href="/tournaments">Stadium</a>
+                        {% else %}
+                            <a class="nav-link" href="/my_tickets">My Tickets</a>
+                        {% endif %}
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user.is_tournament_admin %}
+                                {{ user.name }}, Tournament Admin
+                            {% elif user.is_super_admin %}
+                                {{ user.name }}, Stadium Admin
+                            {% else %}
+                                {{ user.name }}
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="container mt-4">
+        <h3 class="text-center mb-4" style="font-weight: 700;">Add Show</h3>
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="exampleDataList" class="form-label">Tournament</label>
+                        <select class="form-select" aria-label="Select Tournament" name="tournament_screened">
+                            {% for tournament in tournaments %}
+                            <option value="{{ tournament.title }}">{{ tournament.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stadium" class="form-label">Stadium</label>
+                        <select class="form-select" aria-label="Select Theater" name="stadium_screened_in">
+                            {% for stadium in user.stadium %}
+                            <option value="{{ stadium.id }}">{{ stadium.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="seats_available" class="form-label">No of seats</label>
+                        <input type="number" class="form-control" placeholder="Enter the total number of seats" name="seats_available">
+                    </div>
+                    <div class="mb-3">
+                        <label for="production_house" class="form-label">Cost per seat</label>
+                        <input type="number" class="form-control" placeholder="Enter the cost per seat" name="cost_per_seat">
+                    </div>
+                    <div class="mb-3">
+                        <label for="poster" class="form-label">Select Date Time</label>
+                        <input type="datetime-local" class="form-control" name="date_time_screened">
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Add Show</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -37,6 +37,7 @@ BookMyShow is an advanced movie booking system designed to provide a seamless ex
     pip install flask
     pip install Flask-SQLAlchemy
     pip install flask-login
+    pip install flask-migrate
     ```
    If you encounter a "No Module found" error, install the missing module:
     ```bash
@@ -45,6 +46,13 @@ BookMyShow is an advanced movie booking system designed to provide a seamless ex
 3. Run the app:
     ```bash
     python main.py
+    ```
+
+4. Db migrations
+    ``` bash
+        flask db init
+        flask db migrate
+        flask db upgrade/downgrade
     ```
 
 ## Requirements
